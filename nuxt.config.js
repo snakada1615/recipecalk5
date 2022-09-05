@@ -54,7 +54,57 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/bootstrap
-    'bootstrap-vue/nuxt',
+    ['bootstrap-vue/nuxt', {
+      // Add the desired icon components to the `components` array
+      css: false,
+      components: [
+        'BIcon',
+        'BIconReception0',
+        'BIconReception4',
+        'BIconCaretDownSquare',
+        'BIconCheckCircleFill',
+        'BIconPersonCircle',
+        'BIconHouseFill',
+        'BIconExclamationCircleFill',
+        'BIconCheck',
+        'BIconPeopleFill',
+        'BIconX',
+        'BIconEnvelope',
+        'BIconFacebook',
+        'BIconTwitter',
+        'BIconGoogle',
+        'BIconChatDotsFill',
+        'BIconBookmarkCheck',
+        'BIconEye',
+        'BIconEyeSlash',
+        'BIconTrash'
+      ],
+      componentPlugins: [
+        'NavbarPlugin',
+        'LayoutPlugin',
+        'BadgePlugin',
+        'ButtonPlugin',
+        'ModalPlugin',
+        'PaginationPlugin',
+        'TabsPlugin',
+        'CarouselPlugin',
+        'CardPlugin',
+        'ToastPlugin',
+        'TablePlugin',
+        'TooltipPlugin',
+        'InputGroupPlugin',
+        'FormPlugin',
+        'FormGroupPlugin',
+        'FormInputPlugin',
+        'FormSelectPlugin',
+        'FormCheckboxPlugin',
+        'FormRadioPlugin',
+        'FormTextareaPlugin',
+        'ListGroupPlugin',
+        'DropdownPlugin',
+        'ImagePlugin'
+      ]
+    }],
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa

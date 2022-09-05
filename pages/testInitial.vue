@@ -2,6 +2,11 @@
   <b-container>
     test
     <div>{{ firstName }}</div>
+    <b-button
+      @click="$store.dispatch('fire/setHasDocumentChanged', !$store.state.fire.hasDocumentChanged)"
+    >
+      here
+    </b-button>
   </b-container>
 </template>
 <script>
