@@ -608,3 +608,23 @@ export function getFoodGroup (fct) {
     return accumulator
   }, [])
 }
+
+/**
+ * ネストしたObjectを初期化（クリア）
+ * @param delObj
+ */
+export function deleteObject (delObj) {
+  for (const prop in delObj) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (delObj.hasOwnProperty(prop)) {
+      switch (typeof (delObj[prop])) {
+        case 'object':
+          deleteObject(delObj[prop])
+          break
+        default:
+          delete delObj[prop]
+          break
+      }
+    }
+  }
+}

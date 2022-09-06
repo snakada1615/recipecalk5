@@ -10,77 +10,38 @@
 
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto" :small="true">
+        <!--ここから回想メニューの表示-->
         <b-nav-item-dropdown ref="rootMenu" text="Menu" right>
-          <b-dropdown-item to="/">
-            top
-          </b-dropdown-item>
-
-          <!-- メニューグループ1 導入 -->
-          <b-dropdown id="subMenu-0" size="sm" text="Introduction" class="m-md-2" variant="light">
-            <b-dropdown-item to="/whatsNfa">
-              what's NFA
-            </b-dropdown-item>
-            <b-dropdown-item to="/login">
-              login/register
-            </b-dropdown-item>
-            <b-dropdown-item to="/userinfo">
-              user info
-            </b-dropdown-item>
-            <b-dropdown-item to="/foodGroupInfo">
-              about FoodGroup
-            </b-dropdown-item>
-          </b-dropdown>
-
-          <!-- メニューグループ2 食事評価 -->
-          <b-dropdown id="subMenu-1" size="sm" text="Diet Assessment" class="m-md-2" variant="light">
+          <div
+            v-for="(item, index) in myMenuList"
+            :key="index"
+          >
             <b-dropdown-item
-              to="/dietcalk"
-              :disabled="!isLoggedIn"
+              v-if="item.menuCategory !== 'subMenuTitle'"
             >
-              dietCalk
+              {{ item.menuText }}
             </b-dropdown-item>
-            <b-dropdown-item to="/summaryDiet">
-              diet Summary
-            </b-dropdown-item>
-            <b-dropdown-item to="/setSupplyTarget">
-              calculate Supply Target
-            </b-dropdown-item>
-          </b-dropdown>
-
-          <!-- メニューグループ3 品目特定 -->
-          <b-dropdown id="subMenu-2" size="sm" text="Identify Commodity" class="m-md-2" variant="light">
-            <b-dropdown-item
-              to="/feasibilityCheck"
-              :disabled="!isLoggedIn"
+            <b-dropdown
+              v-else
+              :id="'subMenu-' + index"
+              size="sm"
+              :text="item.menuText"
+              class="m-md-2"
+              variant="light"
             >
-              crop feasibility
-            </b-dropdown-item>
-            <b-dropdown-item to="/summaryfeasibility">
-              feasibility Summary
-            </b-dropdown-item>
-          </b-dropdown>
-
-          <!-- メニューグループ4 その他 -->
-          <b-dropdown id="subMenu-3" size="sm" text="Other function" class="m-md-2" variant="light">
-            <!--
-            <b-dropdown-item to="/editFct">edit current FCT</b-dropdown-item>
-            <b-dropdown-item to="/importFct2">change FCT</b-dropdown-item>
-            -->
-            <b-dropdown-item to="/editQuestions">
-              edit feasibility question
-            </b-dropdown-item>
-            <b-dropdown-item to="/copp0;0p0;pyAndPaste">
-              copy & paste
-            </b-dropdown-item>
-            <b-dropdown-item-button
-              :disabled="!isLoggedIn"
-              @click="resetData"
-            >
-              reset Data
-            </b-dropdown-item-button>
-          </b-dropdown>
+              <b-dropdown-item
+                v-for="(subItem, index2) in item.subMenu"
+                :key="index2"
+              >
+                <b-dropdown-item
+                  :to="subItem.menuTo"
+                >
+                  {{ subItem.menuText }}
+                </b-dropdown-item>
+              </b-dropdown-item>
+            </b-dropdown>
+          </div>
         </b-nav-item-dropdown>
-        <div />
 
         <!--  ここからuser情報の表示  -->
         <b-nav-item-dropdown right>
@@ -133,10 +94,119 @@ export default {
       /**
        * ドロップダウンメニューの開閉動作を抑制するためのフラグ
        */
-      isSubMenuVisible: false
+      isSubMenuVisible: false,
+      myMenu: {
+        subMenuCategory: [
+          'root', 'subMenu1', 'subMenu2', 'subMenu3', 'subMenu4'
+        ],
+        menuItems: [
+          {
+            menuCategory: 'root',
+            menuText: '1st item',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu1',
+            menuText: 'menu1-1',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu3',
+            menuText: 'menu3-1',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu1',
+            menuText: 'menu1-2',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'root',
+            menuText: 'menu0-2',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu1',
+            menuText: 'menu1-3',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu2',
+            menuText: 'menu2-1',
+            menuTo: '/',
+            menuDisabled: false
+          },
+          {
+            menuCategory: 'subMenu1',
+            menuText: 'menu1-4',
+            menuTo: '/',
+            menuDisabled: false
+          }
+        ]
+      }
     }
   },
   computed: {
+    myMenuList () {
+      const menuTemp = JSON.parse(JSON.stringify(this.myMenu.menuItems))
+      if (menuTemp.length === 0) {
+        return []
+      }
+      const res2 = []
+      const res3 = []
+      let groupIndex = -1
+      let prevGroup = 'root'
+      const resArray = menuTemp.sort((a, b) => {
+        let res
+        if ((a.menuCategory === 'root') && (b.menuCategory !== 'root')) {
+          res = -1
+        } else if ((a.menuCategory !== 'root') && (b.menuCategory === 'root')) {
+          res = 1
+        } else {
+          res = (a.menuCategory < b.menuCategory) ? -1 : 1
+        }
+        return res
+      })
+      resArray.forEach((item) => {
+        const currentGroup = item.menuCategory
+        const currentMenuText = item.menuText
+        const currentMenuTo = item.menuTo
+        const currentMenuStatus = item.menuDisabled
+        if (currentGroup === 'root') {
+          res2.push(item)
+        } else if (currentGroup === prevGroup) {
+          res3[groupIndex].subMenu.push(item)
+        } else {
+          prevGroup = currentGroup
+          if (groupIndex >= 0) {
+            res2.push(res3[groupIndex])
+          }
+          groupIndex += 1
+          res3.push({})
+          res3[groupIndex].menuCategory = 'subMenuTitle'
+          res3[groupIndex].menuText = currentGroup
+          res3[groupIndex].subMenu = []
+          res3[groupIndex].subMenu.push(
+            {
+              menuCategory: currentGroup,
+              menuText: currentMenuText,
+              menuTo: currentMenuTo,
+              menuDisabled: currentMenuStatus
+            }
+          )
+        }
+      })
+      if (res3[groupIndex].subMenu.length > 0) {
+        res2.push(res3[groupIndex])
+      }
+      return res2
+    },
     /**
      * データ更新の有無($store.state.fire.hasDocumentChanged)を確認
      * @returns {boolean}
