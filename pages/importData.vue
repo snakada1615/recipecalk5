@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <b-card
-      header="Load data from firebase"
+      header="Load data from firebase and save to JSON"
       header-bg-variant="success"
       header-text-variant="light"
       class="my-2"
@@ -49,14 +49,14 @@
         <b-input v-model="keyCol" placeholder="Enter key column" class="my-1 mx-1" />
       </div>
       <b-button
-        :disabled="!dataJson"
+        :disabled="!Object.keys(dataJson).length"
         class="my-1"
         @click="insertData(collection1, dbName1, dataJson)"
       >
         import to firebase
       </b-button>
     </b-card>
-    <b-card v-if="dataJson" bg-variant="light">
+    <b-card v-if="Object.keys(dataJson).length" bg-variant="light">
       <json-viewer
         :value="dataJson"
       />
