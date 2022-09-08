@@ -68,9 +68,17 @@ enableMultiTabIndexedDbPersistence(firestore)
 
 export const firestoreDb = firestore
 
+/**
+ * データを取得（ローカルキャッシュ → サーバーの順に確認）
+ * @param collectionId
+ * @param docId
+ * @returns {Promise<string|DocumentData>}
+ */
 export async function fireGetDoc (collectionId, docId) {
   const ref = await doc(firestoreDb, collectionId, docId)
   const docSnap = await getDocFromCache(ref).catch(async () => {
+    // eslint-disable-next-line no-console
+    console.log('getData from server')
     return await getDocFromServer(ref)
   })
   if (docSnap.exists()) {

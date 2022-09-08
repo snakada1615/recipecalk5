@@ -100,6 +100,7 @@ export default {
         'FormPlugin',
         'FormGroupPlugin',
         'FormInputPlugin',
+        'FormFilePlugin',
         'FormSelectPlugin',
         'FormCheckboxPlugin',
         'FormRadioPlugin',

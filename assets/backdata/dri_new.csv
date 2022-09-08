@@ -1,0 +1,12 @@
+id,nut_group,energy,protein,vita,fe,max_vol
+1,child 6-23 month,1088,11.65,400,5.8,900
+2,child 24-59 month,1204,12.9,400,5.8,1200
+3,child 6-9 yr,1916,26.05,550,8.9,2200
+4,adolescent female,2503,47.4,600,31,2500
+5,adolescent male,3322,57.9,600,18.8,2700
+6,adolescent pregnant,2999,52.5,800,31,2500
+7,adolescent lact,3253,78.4,850,46,2500
+8,adult male,2889,50,600,13.7,2700
+9,adult female,2316,42,500,29.4,2500
+10,pregnant,3098,51.1,800,21.55,2500
+11,lactating,3066,61,850,44.4,2500

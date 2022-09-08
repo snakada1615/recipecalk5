@@ -1,6 +1,8 @@
 // import firebase from '~/plugins/firebase'
 // import {doc} from "firebase/firestore";
-import { getAuth } from 'firebase/auth'
+import {
+  getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile
+} from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import { firestoreDb, fireGetDoc } from '~/plugins/firebasePlugin'
 
@@ -196,6 +198,23 @@ export const mutations = {
    * @param state
    * @param payload
    */
+  initUser (state, payload) {
+    state.myApp.user.uid = payload.uid
+    state.myApp.user.displayName = payload.displayName
+    state.myApp.user.email = payload.email
+    state.myApp.user.phoneNumber = payload.phoneNumber
+    state.myApp.user.country = ''
+    state.myApp.user.subnational1 = ''
+    state.myApp.user.subnational2 = ''
+    state.myApp.user.subnational3 = ''
+    state.myApp.user.organization = ''
+    state.myApp.user.title = ''
+  },
+  /**
+   * ユーザー情報をfireAuthから得たログイン情報に基づいて初期化する
+   * @param state
+   * @param payload
+   */
   storeUser (state, payload) {
     state.myApp.user.uid = payload.uid
     state.myApp.user.displayName = payload.displayName
@@ -215,6 +234,38 @@ export const mutations = {
    */
   updateMyApp (state, payload) {
     state.myApp = JSON.parse(JSON.stringify(payload))
+  },
+  /**
+   * fctを更新
+   * @param state
+   * @param payload 更新する値（JSON）
+   */
+  updateFct (state, payload) {
+    state.myApp.dataSet.fct = JSON.parse(JSON.stringify(payload))
+  },
+  /**
+   * driを更新
+   * @param state
+   * @param payload 更新する値（JSON）
+   */
+  updateDri (state, payload) {
+    state.myApp.dataSet.dri = JSON.parse(JSON.stringify(payload))
+  },
+  /**
+   * portionUnitを更新
+   * @param state
+   * @param payload 更新する値（Array of Objects）
+   */
+  updatePortionUnit (state, payload) {
+    state.myApp.dataSet.portionUnit = JSON.parse(JSON.stringify(payload))
+  },
+  /**
+   * questionsを更新
+   * @param state
+   * @param payload 更新する値（Array of Objects）
+   */
+  updateQuestions (state, payload) {
+    state.myApp.dataSet.questions = JSON.parse(JSON.stringify(payload))
   },
   /**
    * ページ変更の状態をセット
@@ -253,6 +304,105 @@ export const mutations = {
 
 export const actions = {
   /**
+   * name/passwordでアカウント作成(signInWithEmailAndPasswordを流用)
+   *     アカウント作成後に、基本DBをユーザー用に複製(fct, dri)
+   * @param commit
+   * @param state
+   * @param dispatch
+   * @param payload
+   * @returns {Promise<void>}
+   */
+  async registerEmail ({ commit, state, dispatch }, payload) {
+    const auth = getAuth()
+    const email = payload.name + '@ifna.app'
+    const res = await createUserWithEmailAndPassword(auth, email, payload.password)
+      .catch((error) => {
+        commit('updateIsLoggedIn', false)
+        throw error
+        // ..
+      })
+    const user = res.user
+    await updateProfile(user, {
+      displayName: payload.name,
+      email
+    }).catch((error) => {
+      commit('updateIsLoggedIn', false)
+      // eslint-disable-next-line no-console
+      console.log(error)
+      throw error
+      // ..
+    })
+
+    commit('initUser', user)
+    commit('updateIsLoggedIn', true)
+    // eslint-disable-next-line no-console
+    console.log('login success')
+    /**
+     * 認証状態の永続性についてはsetPersistenceで設定
+     */
+    await setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('keeping state')
+        // topページに移動
+        this.$router.push('/')
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        // eslint-disable-next-line no-console
+        console.log('keeping state error: ', errorCode, errorMessage)
+        throw error
+      })
+    // fct. dri, portionUnit, questionsのオリジナルをfirebaseからコピーしてユーザースペースmyAppに貼り付ける
+    // eslint-disable-next-line no-console
+    console.log('copy original database to user space')
+    dispatch('copyOriginalDataSet2UserDataOnRegistration', state.myApp)
+  },
+  /**
+   * name/passwordでログイン(signInWithEmailAndPasswordを流用)
+   * @param commit
+   * @param payload ログイン情報
+   *     {payload.name, payload.password}
+   * @returns {Promise<void>}
+   */
+  async loginEmail ({ commit }, payload) {
+    const auth = getAuth()
+    const email = payload.name + '@ifna.app'
+    const res = await signInWithEmailAndPassword(auth, email, payload.password)
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        commit('updateIsLoggedIn', false)
+        // eslint-disable-next-line no-console
+        console.log('login error: ' + errorCode + ': ' + errorMessage)
+        throw error
+      })
+    const user = res.user
+    commit('initUser', user)
+    commit('updateIsLoggedIn', true)
+    // eslint-disable-next-line no-console
+    console.log('login success')
+
+    /**
+     * 認証状態の永続性についてはsetPersistenceで設定
+     */
+    await setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('keeping state')
+        // topページに移動
+        this.$router.push('/')
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        // eslint-disable-next-line no-console
+        console.log('keeping state error: ', errorCode, errorMessage)
+        throw error
+      })
+  },
+  /**
    * ページ遷移・リロードの度にログイン状態を確認(middleware:login.js → getAuth().onAuthStateChanged)、
    *     ログインされてる場合 → ユーザー情報がstoreに保存されているか確認（isMyAppStored）
    *     → storeに保存されていない場合はfireStoreからfetch
@@ -277,8 +427,10 @@ export const actions = {
             // ユーザーデータ(myApp)が読み込まれていない場合、fireStoreからfetch
             await dispatch('storeMyApp', user.uid).catch(async () => {
               alert('no data registered, load initial dataset')
-              await dispatch('initAll', user)
-              dispatch('updateIsMyAppStored')
+              await dispatch('initAll', user).catch((err) => {
+                reject(err)
+              })
+              commit('updateIsMyAppStored')
               // eslint-disable-next-line no-console
               console.log('initFirebaseAuth: data fetch from fireStore')
             })
@@ -315,20 +467,14 @@ export const actions = {
     if (!payload) {
       throw new Error('Error: initAll → no registered user-info')
     }
-    try {
-      await commit('storeUser', payload)
-      await dispatch('storeFct')
-      await dispatch('storeDri')
-      await dispatch('storePortionUnit')
-      await dispatch('storeQuestions')
-      await dispatch('fireSaveAppdata')
-      // eslint-disable-next-line no-console
-      console.log('initAll: all done')
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.log('Error: initAll')
-      throw err
-    }
+    await commit('storeUser', payload)
+    await dispatch('storeFct')
+    await dispatch('storeDri')
+    await dispatch('storePortionUnit')
+    await dispatch('storeQuestions')
+    await dispatch('fireSaveAppdata')
+    // eslint-disable-next-line no-console
+    console.log('initAll: all done')
   },
   /**
    * 現在のユーザーの全テータをfirestoreに保存
@@ -369,7 +515,9 @@ export const actions = {
     dispatch,
     state
   }) {
-    const fct = await fireGetDoc('dataset', state.myApp.dataSet.fctId)
+    const fct = await fireGetDoc('dataset', state.myApp.dataSet.fctId).catch((err) => {
+      throw err
+    })
     if (fct) {
       // ObjectをArrayに変換
       const fctArray = formatFct(fct)

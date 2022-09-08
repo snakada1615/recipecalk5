@@ -628,3 +628,36 @@ export function deleteObject (delObj) {
     }
   }
 }
+
+/**
+ * jsonをCSVに変換
+ * key0: [key1: value] 形式 → Array of CSV (val1, val2, val3, val4)
+ */
+export function json2Csv (datJson) {
+  const commaDelimitedArray = []
+  if (datJson) {
+    const myKeys = Object.keys(Object.values(datJson)[0])
+    commaDelimitedArray.push(String(myKeys))
+
+    Object.values(datJson).forEach((item) => {
+      let singleLine = ''
+      myKeys.forEach((myKeyItem, index) => {
+        singleLine += item[myKeyItem] + ','
+        // 末尾のコンマを削除する
+        if (index === myKeys.length - 1) {
+          singleLine = singleLine.slice(0, -1)
+        }
+      })
+      commaDelimitedArray.push(singleLine)
+    })
+  }
+  let csvText = ''
+  commaDelimitedArray.forEach((item, index) => {
+    csvText += String(item) + '\n'
+    // 末尾の改行を削除する
+    if (index === commaDelimitedArray.length - 1) {
+      csvText = csvText.slice(0, -1)
+    }
+  })
+  return csvText
+}
