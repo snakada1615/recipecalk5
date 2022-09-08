@@ -489,10 +489,9 @@ export const actions = {
    */
   async fireSaveAppdata ({
     state,
-    dispatch,
     commit
   }) {
-    dispatch('updateSaveDate')
+    commit('updateSaveDate')
     const ref = await doc(firestoreDb, 'users', state.myApp.user.uid)
     await setDoc(ref, state.myApp).catch((err) => {
       throw new Error('Error in fireSaveAppdata:' + err)
