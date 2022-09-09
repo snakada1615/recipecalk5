@@ -11,7 +11,7 @@ export default async function ({
     // eslint-disable-next-line no-console
     console.log(err)
     // eslint-disable-next-line no-console
-    console.log('login-middleware: Error')
+    console.log('initFirebaseAuth: Error')
   })
   if (
     route.name !== 'loginApp' &&
@@ -20,6 +20,7 @@ export default async function ({
     route.name !== 'testInitial2' &&
     !store.state.fire.isLoggedIn
   ) {
+    console.log(store.state.fire.isLoggedIn)
     alert('please login/register first')
     // eslint-disable-next-line no-console
     console.log('not login')

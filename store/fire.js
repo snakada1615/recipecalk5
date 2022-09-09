@@ -441,6 +441,7 @@ export const actions = {
           resolve(user)
         } else {
           if (state.myApp.length) {
+            console.log('state.myApp.length = 0')
             commit('clearMyApp')
           }
           commit('updateIsLoggedIn', false)
