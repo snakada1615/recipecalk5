@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app'
 import {
   initializeFirestore, CACHE_SIZE_UNLIMITED,
-  enableMultiTabIndexedDbPersistence, doc, getDocFromCache, getDocFromServer
+  enableMultiTabIndexedDbPersistence, doc, getDocFromCache, getDocFromServer, getDocs, collection
 } from 'firebase/firestore'
 
 /**
@@ -11,13 +11,13 @@ import {
  *     string, appId: string, projectId: string, databaseURL: string, authDomain: string}}
  */
 const firebaseConfig = {
-  apiKey: 'AIzaSyApC67MbBdfJTy3p79uBracs1CEmjgERuo',
-  authDomain: 'ifna-nfa-app2.firebaseapp.com',
-  projectId: 'ifna-nfa-app2',
-  storageBucket: 'ifna-nfa-app2.appspot.com',
-  messagingSenderId: '952618704950',
-  appId: '1:952618704950:web:eb987399567bf4ffcb3897',
-  measurementId: 'G-XMS497SG57'
+  apiKey: 'AIzaSyDH_RkqtAD6I-MQIcSVFVWDeeGzZUPI2pw',
+  authDomain: 'ifnaapp01.firebaseapp.com',
+  databaseURL: 'https://ifnaapp01-default-rtdb.asia-southeast1.firebasedatabase.app',
+  projectId: 'ifnaapp01',
+  storageBucket: 'ifnaapp01.appspot.com',
+  messagingSenderId: '419104702670',
+  appId: '1:419104702670:web:94dc61759415cd134a909f'
 }
 
 /**
@@ -90,4 +90,20 @@ export async function fireGetDoc (collectionId, docId) {
     console.log('getData fail: no data in Cache')
     return ''
   }
+}
+
+export async function getFileList (myCollection, returnValue = 1) {
+  const res = []
+  const querySnapshot = await getDocs(collection(firestoreDb, myCollection)).order_by('id')
+  querySnapshot.forEach((item) => {
+    if (returnValue === 2) {
+      res.push({
+        id: item.id,
+        name: item.data().user.displayName
+      })
+    } else {
+      res.push(item.id)
+    }
+  })
+  return res
 }

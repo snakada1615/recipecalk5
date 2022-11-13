@@ -1,6 +1,53 @@
 <template>
   <b-container>
     <b-card
+      header="Copy and paste data within firebase"
+      header-bg-variant="success"
+      header-text-variant="light"
+      class="my-2"
+    >
+      <b-card
+        header="Copy from"
+        class="my-1"
+      >
+        <div class="d-flex flex-row align-items-center">
+          <div>collection</div>
+          <b-select v-model="collection4" :options="collectionList" class="my-1 mx-1" />
+        </div>
+        <div class="d-flex flex-row align-items-center">
+          <div>document</div>
+          <b-select v-model="dbName4" :options="myDocListFiltered" class="my-1 mx-1" />
+        </div>
+        <b-button class="my-1" @click="getData(collection4, dbName4, 2)">
+          load from firebase
+        </b-button>
+      </b-card>
+
+      <b-card v-if="dataFire2" bg-variant="light">
+        <json-viewer
+          :value="dataFire2"
+        />
+      </b-card>
+
+      <b-card
+        header="Paste to"
+        class="my-1"
+      >
+        <div class="d-flex flex-row align-items-center">
+          <div>collection</div>
+          <b-select v-model="collection5" :options="collectionList" class="my-1 mx-1" />
+        </div>
+        <div class="d-flex flex-row align-items-center">
+          <div>document</div>
+          <b-input v-model="dbName5" placeholder="Enter doc name" class="my-1 mx-1" />
+        </div>
+        <b-button class="my-1" :disabled="!dataFire2" @click="insertData(collection5, dbName5, dataJson2)">
+          save to other collection
+        </b-button>
+      </b-card>
+    </b-card>
+
+    <b-card
       header="Load data from firebase and save to JSON"
       header-bg-variant="success"
       header-text-variant="light"
@@ -113,7 +160,7 @@
 </template>
 
 <script>
-import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, collection, getDocs, query } from 'firebase/firestore'
 import JsonViewer from 'vue-json-viewer'
 import csvImport from '@/components/molecules/csvImport'
 import { firestoreDb } from '~/plugins/firebasePlugin'
@@ -134,6 +181,14 @@ export default {
         {
           value: 'users',
           text: 'user data'
+        },
+        {
+          value: 'nfaSharedData',
+          text: 'nfa backend dataset'
+        },
+        {
+          value: 'nfaUserData',
+          text: 'nfa user data'
         }
       ],
       key1: '',
@@ -157,9 +212,25 @@ export default {
        */
       collection2: '',
       /**
+       * コレクション名(firebaseからの読み込み用)
+       */
+      collection4: '',
+      /**
+       * コレクション名(firebaseへの保存用)
+       */
+      collection5: '',
+      /**
        * ドキュメント名(firebaseからの読み込み用)
        */
       dbName2: '',
+      /**
+       * ドキュメント名(firebaseからの読み込み用)
+       */
+      dbName4: '',
+      /**
+       * ドキュメント名(firebaseへの保存用)
+       */
+      dbName5: '',
       /**
        * キーフィールドの指定
        */
@@ -169,11 +240,16 @@ export default {
        */
       dataFire: '',
       /**
+       * firebaseから読み込んだデータ本体
+       */
+      dataFire2: '',
+      /**
        * コレクション名(firebaseからの読み込み用)
        */
       collection3: '',
       fileJSON: [],
-      dataJson3: ''
+      dataJson3: '',
+      myDocList: []
     }
   },
   computed: {
@@ -249,6 +325,27 @@ export default {
         res += '<div>' + item + '<div>'
       })
       return res
+    },
+    myDocListFiltered: {
+      get () {
+        return this.myDocList.filter(item1 => item1.category === this.collection4).map((item2) => {
+          return item2.id
+        })
+      }
+    }
+  },
+  async created () {
+    for (const myCollection of this.collectionList) {
+      const ref = collection(firestoreDb, myCollection.value)
+      const q = query(ref)
+      const querySnapshot = await getDocs(q)
+      querySnapshot.forEach((doc) => {
+        this.myDocList.push({
+          // id: (myCollection.value === 'users') ? doc.data().user.displayName : doc.id,
+          id: doc.id,
+          category: myCollection.value
+        })
+      })
     }
   },
   methods: {
@@ -287,18 +384,24 @@ export default {
      * collection, dbNameで指定したドキュメントをfirebaseから読み込み
      * @returns {Promise<void>}
      */
-    async getData (myCollection, myDoc) {
+    async getData (myCollection, myDoc, myCase = 1) {
       const ref = await doc(firestoreDb, myCollection, myDoc)
       await getDoc(ref).then((doc) => {
         if (doc.exists()) {
-          this.dataFire = doc.data()
+          if (myCase === 1) {
+            this.dataFire = doc.data()
+          } else {
+            this.dataFire2 = doc.data()
+          }
         } else {
           alert('id does not match')
         }
       })
     },
     async getFileList (myCollection) {
-      const querySnapshot = await getDocs(collection(firestoreDb, myCollection))
+      const ref = collection(firestoreDb, myCollection)
+      const q = query(ref)
+      const querySnapshot = await getDocs(q)
       this.myList.length = 0
       querySnapshot.forEach((doc) => {
         this.myList.push(doc.id)
@@ -316,8 +419,8 @@ export default {
       const link = document.createElement('a')
       const date = new Date()
       link.href = URL.createObjectURL(blob)
-      link.download = 'exportData-' + date.getFullYear() + '-' + (date.getMonth() + 1).slice(-2) +
-        '-' + date.getDate().slice(-2) + '.firebase.json'
+      link.download = 'exportData-' + date.getFullYear() + '-' + String(date.getMonth() + 1).slice(-2) +
+        '-' + String(date.getDate()).slice(-2) + '.firebase.json'
       link.click()
     },
     async onJsonFileSelected () {

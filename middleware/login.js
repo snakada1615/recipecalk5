@@ -16,10 +16,11 @@ export default async function ({
   if (
     route.name !== 'loginApp' &&
     route.name !== 'index' &&
-    route.name !== 'importDataCsv' &&
+    route.name !== 'importData' &&
     route.name !== 'testInitial2' &&
     !store.state.fire.isLoggedIn
   ) {
+    console.log(route.name)
     console.log(store.state.fire.isLoggedIn)
     alert('please login/register first')
     // eslint-disable-next-line no-console
