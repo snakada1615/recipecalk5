@@ -167,6 +167,10 @@ export const state = () => ({
     communityCases: []
   },
   /**
+   * loadingBox表示用のフラグ
+   */
+  loadingStatus: false,
+  /**
    * ページ変更の有無(beforeunloadをエラーなしで通すために必要)
    * https://www.uriports.com/blog/easy-fix-for-blocked-attempt-beforeunload-confirmation-panel/
    */
@@ -193,6 +197,14 @@ export const state = () => ({
 })
 
 export const mutations = {
+  /**
+   * 外部データの読み込み時のstatus表示用フラグ
+   * @param state
+   * @param payload
+   */
+  updateLoadingState (state, payload) {
+    state.loadingStatus = payload
+  },
   /**
    * ユーザー情報をfireAuthから得たログイン情報に基づいて初期化する
    * @param state
@@ -303,6 +315,14 @@ export const mutations = {
 }
 
 export const actions = {
+  /**
+   * loadingStatusの更新
+   * @param commit
+   * @param payload
+   */
+  updateLoadingState ({ commit }, payload) {
+    commit('updateLoadingState', payload)
+  },
   /**
    * name/passwordでアカウント作成(signInWithEmailAndPasswordを流用)
    *     アカウント作成後に、基本DBをユーザー用に複製(fct, dri)

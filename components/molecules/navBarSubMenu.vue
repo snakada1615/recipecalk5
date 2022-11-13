@@ -84,11 +84,18 @@
         <b-icon icon="reception0" />
       </div>
     </b-navbar>
+    <loading-box
+      :open-flag="$store.state.fire.loadingStatus"
+    />
   </b-container>
 </template>
 <script>
+import loadingBox from '@/components/atoms/loadingBox'
 
 export default {
+  components: {
+    loadingBox
+  },
   data () {
     return {
       /**
@@ -108,8 +115,8 @@ export default {
           },
           {
             menuCategory: 'subMenu1',
-            menuText: 'menu1-1',
-            menuTo: '/',
+            menuText: 'firestore edit',
+            menuTo: '/importData/',
             menuDisabled: false
           },
           {

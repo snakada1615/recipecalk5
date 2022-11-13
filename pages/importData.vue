@@ -41,7 +41,7 @@
           <div>document</div>
           <b-input v-model="dbName5" placeholder="Enter doc name" class="my-1 mx-1" />
         </div>
-        <b-button class="my-1" :disabled="!dataFire2" @click="insertData(collection5, dbName5, dataJson2)">
+        <b-button class="my-1" :disabled="!dataFire2" @click="insertData(collection5, dbName5, dataFire2)">
           save to other collection
         </b-button>
       </b-card>
@@ -164,7 +164,7 @@ import { doc, getDoc, setDoc, collection, getDocs, query } from 'firebase/firest
 import JsonViewer from 'vue-json-viewer'
 import csvImport from '@/components/molecules/csvImport'
 import { firestoreDb } from '~/plugins/firebasePlugin'
-import { json2Csv } from '@/plugins/helper'
+import { json2Csv, makeToast } from '@/plugins/helper'
 
 export default {
   components: {
@@ -335,6 +335,9 @@ export default {
     }
   },
   async created () {
+    // set loading status
+    await this.$store.dispatch('fire/updateLoadingState', true)
+
     for (const myCollection of this.collectionList) {
       const ref = collection(firestoreDb, myCollection.value)
       const q = query(ref)
@@ -347,6 +350,8 @@ export default {
         })
       })
     }
+    // release loading status
+    await this.$store.dispatch('fire/updateLoadingState', false)
   },
   methods: {
     /**
@@ -378,6 +383,7 @@ export default {
       }).then(() => {
         // eslint-disable-next-line no-console
         console.log('import complete: ' + this.dbName)
+        makeToast(this, 'import complete')
       })
     },
     /**

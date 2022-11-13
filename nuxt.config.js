@@ -107,7 +107,8 @@ export default {
         'FormTextareaPlugin',
         'ListGroupPlugin',
         'DropdownPlugin',
-        'ImagePlugin'
+        'ImagePlugin',
+        'OverlayPlugin'
       ]
     }],
     // https://go.nuxtjs.dev/axios
